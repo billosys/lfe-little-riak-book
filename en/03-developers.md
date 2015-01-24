@@ -767,7 +767,7 @@ databases. In Riak, you execute a MapReduce job on a single node, which
 then propagates to the other nodes. The results are mapped and reduced,
 then further reduced down to the calling node and returned.
 
-![MapReduce Returning Name Char Count](../assets/mapreduce.svg)
+![MapReduce Returning Name Char Count](../assets/mapreduce.png)
 
 Let's assume we have a bucket for log values that stores messages
 prefixed by either INFO or ERROR. We want to count the number of INFO

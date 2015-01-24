@@ -899,7 +899,7 @@ Any queued handoffs will be stopped. But any completed handoffs may have to be t
 
 ## How Riak is Built
 
-![Tech Stack](../assets/riak-stack.svg)
+![Tech Stack](../assets/riak-stack.png)
 
 It's difficult to label Riak as a single project. It's probably more correct to think of
 Riak as the center of gravity for a whole system of projects. As we've covered
