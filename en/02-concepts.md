@@ -18,11 +18,11 @@ Second, relational database management systems (RDBMS) have become focused over 
 
 These new databases are collected under the moniker *NoSQL*, and Riak is of its ilk.
 
-<h3>Database Models</h3>
+### Database Models
 
 Modern databases can be loosely grouped into the ways they represent data. Although I'm presenting 5 major types (the last 4 are considered NoSQL models), these lines are often blurred---you can use some key/value stores as a document store, you can use a relational database to just store key/value data.
 
-<aside id="joins" class="sidebar"><h3>A Quick note on JOINs</h3>
+### Aside: A Quick note on JOINs</h3>
 
 Unlike relational databases, but similar to document and columnar stores, objects cannot be joined by Riak. Client code is responsible for accessing values and merging them, or by other code such as MapReduce.
 
@@ -70,31 +70,39 @@ Riak is a Key/Value (KV) database, built from the ground up to safely distribute
 
 Riak functions similarly to a very large hash space. Depending on your background, you may call it hashtable, a map, a dictionary, or an object. But the idea is the same: you store a value with an immutable key, and retrieve it later.
 
-<h3>Key and Value</h3>
+### Key and Value
 
 ![A Key is an Address](../assets/decor/addresses.png)
 
-Key/value is the most basic construct in all of computerdom. You can think of a key like a home address, such as Bob's house with the unique key 5124, while the value would be maybe Bob (and his stuff).
+Key/value is the most basic construct in all of computerdom. You can think of a key like a home address, such as Alice's house with the unique key 5124, while the value would be maybe Alice (and her stuff).
 
-```javascript
-hashtable["5124"] = "Bob"
+```lisp
+> (set house `(#("5124" "Alice")))
+(#("5124" "Alice"))
 ```
 
-Retrieving Bob is as easy as going to his house.
+Retrieving Alice is as easy as going to her house.
 
-```javascript
-bob = hashtable["5124"]
+```lfe
+> (set alice (proplists:get_value "5124" house))
+"Alice"
 ```
 
-Let's say that poor old Bob dies, and Claire moves into this house. The address remains the same, but the contents have changed.
+Let's say that poor old Alice dies, and Bob moves into this house. The address remains the same, but the contents have changed.
 
-```javascript
-hashtable["5124"] = "Claire"
+```lfe
+> (set house `(#("5124" "Bob")))
+(#("5124" "Bob"))
 ```
 
-Successive requests for `5124` will now return `Claire`.
+Successive requests for `5124` will now return `Bob`:
 
-<h3>Buckets</h3>
+```lfe
+> (proplists:get_value "5124" house)
+"Bob"
+```
+
+### Buckets
 
 <!-- image: address streets metaphore -->
 
@@ -102,22 +110,20 @@ Addresses in Riakville are more than a house number, but also a street. There co
 
 *Buckets* in Riak are analogous to street names: they provide logical [namespaces](http://en.wikipedia.org/wiki/Namespace) so that identical keys in different buckets will not conflict.
 
-For example, while Alice may live at *5122 Main Street*, there may be a gas station at *5122 Bagshot Row*.
+For example, while Carol may live at *5122 Main Street*, there may be a gas station at *5122 Bagshot Row*. This would be like two different proplists:
 
-```javascript
-main["5122"] = "Alice"
-bagshot["5122"] = "Gas"
+```lfe
+> (set main `(#("5122" "Carol")))
+(#("5122" "Carol"))
+> (set bagshot `(#("5122" "Gas")))
+(#("5122" "Gas"))
 ```
 
-Certainly you could have just named your keys `main_5122` and `bagshot_5122`, but buckets allow for cleaner key naming, and have other benefits, such as custom properties. For example, to add new Riak Search 2.0 indexes to a bucket, you might tell Riak to index all values under a bucket like this:
-
-```javascript
-main.props = {"search_index":"homes"}
-```
+Certainly you could have just named your keys `main_5122` and `bagshot_5122`, but buckets allow for cleaner key naming, and have other benefits, such as custom properties. For example, to add new Riak Search 2.0 indexes to a bucket, you might tell Riak to index all values under a bucket.
 
 Buckets are so useful in Riak that all keys must belong to a bucket. There is no global namespace. The true definition of a unique key in Riak is actually `bucket/key`.
 
-<h3>Bucket Types</h3>
+### Bucket Types
 
 Starting in Riak 2.0, there now exists a level above buckets, called bucket types. Bucket types are groups of buckets with a similar set of properties. So for the example above, it would be like a bucket of keys:
 
@@ -145,7 +151,7 @@ For convenience, we call a *type/bucket/key + value* pair an *object*, sparing o
 
 Distributing data across several nodes is how Riak is able to remain highly available, tolerating outages and network partitions. Riak combines two styles of distribution to achieve this: [replication](http://en.wikipedia.org/wiki/Replication) and [partitions](http://en.wikipedia.org/wiki/Partition).
 
-<h3>Replication</h3>
+### Replication
 
 **Replication** is the act of duplicating data across multiple servers. Riak replicates by default.
 
