@@ -20,7 +20,7 @@ Riak is an open-source, distributed key/value database for high availability, fa
 
 As the modern world stitches itself together with increasingly intricate connections, major shifts are occurring in information management. The web and networked devices spur an explosion of data collection and access unseen in the history of the world. The magnitude of values stored and managed continues to grow at a staggering rate, and in parallel, more people than ever require fast and reliable access to this data. This trend is known as *Big Data*.
 
-<aside id="big-data" class="sidebar"><h3>So What is Big Data?</h3>
+### Aside: So What is Big Data?
 
 There's a lot of discussion around what constitutes <em>Big Data</em>.
 
@@ -30,9 +30,10 @@ I have a 6 Terabyte RAID in my house to store videos and other backups. Does tha
 
 It's a hard number to pin down, because Big Data is a personal figure. What's big to one might be small to another. This is why many definitions don't refer to byte count at all, but instead about relative potentials. A reasonable, albeit wordy, definition of Big Data is provided by Gartner:
 
-<blockquote><em>Big Data are high-volume, high-velocity, and/or high-variety information figures that require new forms of processing to enable enhanced decision making, insight discovery and process optimization.</em></blockquote></aside>
+<blockquote>Big Data are high-volume, high-velocity, and/or high-variety information figures that require new forms of processing to enable enhanced decision making, insight discovery and process optimization.
+</blockquote>
 
-<h3>Always Bet on Riak</h3>
+### Always Bet on Riak
 
 The sweet spot of Riak is high-volume (data that's available to read and write when you need it), high-velocity (easily responds to growth), and high-variety information figures (you can store any type of data as a value).
 
