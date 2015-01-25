@@ -30,5 +30,8 @@
   * [Data Modeling](ch5/3.md)
   * [Conflict Resolution](ch5/4.md)
   * [Request Tuning](ch5/5.md)
-* [Notes](en/06-notes.md)
+* [Notes](ch6/README.md)
+  * [A Short Note on RiakCS](ch6/1.md)
+  * [A Short Note on MDC](ch6/2.md)
+  * [Locks, A Cautionary Tale](ch6/3.md)
 
