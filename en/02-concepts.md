@@ -164,7 +164,7 @@ For example, imagine you have a list of country keys, whose values are those cou
 The downside with replication is that you are multiplying the amount of storage required for every duplicate. There is also some network overhead with this approach, since values must also be routed to all replicated nodes on write. But there is a more insidious problem with this approach, which I will cover shortly.
 
 
-<h3>Partitions</h3>
+### Partitions
 
 A **partition** is how we divide a set of keys onto separate  physical servers. Rather than duplicate values, we pick one server to exclusively host a range of keys, and the other servers to host remaining non-overlapping ranges.
 
@@ -178,7 +178,7 @@ There is a bit of overhead to the partition approach. Some service must keep tra
 
 There's also another downside. Unlike replication, simple partitioning of data actually *decreases* uptime. If one node goes down, that entire partition of data is unavailable. This is why Riak uses both replication and partitioning.
 
-<h3>Replication+Partitions</h3>
+### Replication+Partitions
 
 Since partitions allow us to increase capacity, and replication improves availability, Riak combines them. We partition data across multiple nodes, as well as replicate that data into multiple nodes.
 
@@ -193,7 +193,7 @@ The Riak team suggests a minimum of 5 nodes for a Riak cluster, and replicating 
 <!-- If the odds of a node going down on any day is 1%, then the odds of any server going down each day when you have 100 of them is about (1-(0.99^100)) 63%. For sufficiently large systems, servers going down are no longer edge-cases. They become regular cases that must be planned for, and designed into your system.
 -->
 
-<h3>The Ring</h3>
+### The Ring
 
 Riak applies *consistent hashing* to map objects along the edge of a circle (the ring).
 
@@ -236,7 +236,7 @@ Armed with this information, requests for data can target any node. It will hori
 
 So far we've covered the good parts of partitioning and replication: highly available when responding to requests, and inexpensive capacity scaling on commodity hardware. With the clear benefits of horizontal scaling, why is it not more common?
 
-<h3>CAP Theorem</h3>
+### CAP Theorem
 
 Classic RDBMS databases are *write consistent*. Once a write is confirmed, successive reads are guaranteed to return the newest value. If I save the value `cold pizza` to my key `favorite`, every future read will consistently return `cold pizza` until I change it.
 
@@ -250,20 +250,20 @@ This tradeoff is known as Brewer's CAP theorem. CAP loosely states that you can 
 
 <!-- A fourth concept not covered by the CAP theorem, latency, is especially important here. -->
 
-<h3>Strong Consistency</h3>
+### Strong Consistency
 
 Since version 2.0, Riak now supports strong Consistency (SC), as well as High Availability (HA). "Waitaminute!" I hear you say, "doesn't that break the CAP theorem?" Not the way Riak does it. Riak supports setting a bucket type property as strongly consistent. Any bucket of that type is now SC. Meaning, that a request is either successfully replicated to a majority of partitions, or it fails (if you want to sound fancy at parties, just say "Riak SC uses a variant of the vertical Paxos leader election algorithm").
 
 This, naturally, comes at a cost. As we know from the CAP theorem, if too many nodes are down, the write will fail. You'll have to repair your node or network, and try the write again. In short, you've lost high availability. If you don't absolutely need strong consistency, consider staying with the high availability default, and tuning it to your needs as we'll see in the next section.
 
 
-<h3>Tunable Availability with N/R/W</h3>
+### Tunable Availability with N/R/W
 
 A question the CAP theorem demands you answer with a distributed system is: do I give up strong consistency, or give up ensured availability? If a request comes in, do I lock out requests until I can enforce consistency across the nodes? Or do I serve requests at all costs, with the caveat that the database may become inconsistent?
 
 Riak's solution is based on Amazon Dynamo's novel approach of a *tunable* AP system. It takes advantage of the fact that, though the CAP theorem is true, you can choose what kind of tradeoffs you're willing to make. Riak is highly available to serve requests, with the ability to tune its level of availability---nearing, but never quite reaching, strong consistency. If you want strong consistency, you'll need to create a special SC bucket type, which we'll see in a later chapter.
 
-<aside class="sidebar"><h3>Not Quite C</h3>
+### Aside: Not Quite C
 
 Strictly speaking, altering R and W values actually creates a tunable availability/latency tradeoff, rather than availability/consistency. Making Riak run faster by keeping R and W values low will increase the likelihood of temporarily inconsistent results (higher availability). Setting those values higher will improve the <em>odds</em> of consistent responses (never quite reaching strong consistency), but will slow down those responses and increase the likelihood that Riak will fail to respond (in the event of a partition).
 </aside>
@@ -274,11 +274,11 @@ A thought experiment may help clarify things.
 
 ![NRW](../assets/nrw.png)
 
-<h4>N</h4>
+#### N
 
 With our 5 node cluster, having an `n_val=3` means values will eventually replicate to 3 nodes, as we've discussed above. This is the *N value*. You can set other values (R,W) to equal the `n_val` number with the shorthand `all`.
 
-<h4>W</h4>
+#### W
 
 But you may not wish to wait for all nodes to be written to before returning. You can choose to wait for all 3 to finish writing (`w=3` or `w=all`), which means my values are more likely to be consistent. Or you could choose to wait for only 1 complete write (`w=1`), and allow the remaining 2 nodes to write asynchronously, which returns a response quicker but increases the odds of reading an inconsistent value in the short term. This is the *W value*.
 
@@ -286,17 +286,17 @@ In other words, setting `w=all` would help ensure your system was more likely to
 
 A failed write, however, is not necessarily a true failure. The client will receive an error message, but the write will typically still have succeeded on some number of nodes smaller than the *W* value, and will typically eventually be propagated to all of the nodes that should have it.
 
-<h4>R</h4>
+#### R
 
 Reading involves similar tradeoffs. To ensure you have the most recent value, you can read from all 3 nodes containing objects (`r=all`). Even if only 1 of 3 nodes has the most recent value, we can compare all nodes against each other and choose the latest one, thus ensuring some consistency. Remember when I mentioned that RDBMS databases were *write consistent*? This is close to *read consistency*. Just like `w=all`, however, the read will fail unless 3 nodes are available to be read. Finally, if you only want to quickly read any value, `r=1` has low latency, and is likely consistent if `w=all`.
 
 In general terms, the N/R/W values are Riak's way of allowing you to trade lower consistency for more availability.
 
-<h3>Logical Clock</h3>
+### Logical Clock
 
 If you've followed thus far, I only have one more conceptual wrench to throw at you. I wrote earlier that with `r=all`, we can "compare all nodes against each other and choose the latest one." But how do we know which is the latest value? This is where logical clocks like *vector clocks* (aka *vclocks*) come into play.
 
-<aside class="sidebar"><h3>DVV</h3>
+### Aside: DVV
 
 Since Riak 2.0, some internal values have been migrated over to an alternative logical timestamp called Dot Version Vectors (DVV). How they operate isn't germain to this short lesson, but rather, what is important is basic idea of a logical clock. You can read more about DVVs (or any Riak concept) on the [Basho docs website](http://docs.basho.com).
 </aside>
@@ -366,7 +366,7 @@ Now we are back to the simple case, where requesting the value of `favorite` wil
 
 If you're a programmer, you may notice that this is not unlike a version control system, like **git**, where conflicting branches may require manual merging into one.
 
-<h3>Datatypes</h3>
+### Datatypes
 
 New in Riak 2.0 is the concept of datatypes. In the preceding logical clock example, we were responsible for resolving the conflicting values. This is because in the normal case, Riak has no idea what object's you're giving it. That is to say, Riak values are *opaque*. This is actually a powerful construct, since it allows you to store any type of value you want, from plain text, to semi-structured data like XML or JSON, to binary objects like images.
 
@@ -427,9 +427,9 @@ How this all works is beyond the scope of this document. Under the covers it's i
 
 We'll see how to use datatypes in the next chapter.
 
-<h3>Riak and ACID</h3>
+### Riak and ACID
 
-<aside id="acid" class="sidebar"><h3>Distributed Relational is Not Exempt</h3>
+### Aside: Distributed Relational is Not Exempt
 
 So why don't we just distribute a standard relational database? MySQL has the ability to cluster, and it's ACID (<em>Atomic</em>, *Consistent*, *Isolated*, *Durable*), right? Yes and no.
 
