@@ -24,6 +24,11 @@
   * [How Riak is Built](ch4/4.md)
   * [Tools](ch4/5.md)
   * [Wrapup](ch4/6.md)
-* [App Guide](en/05-app-guide.md)
+* [App Guide](ch5/README.md)
+  * [How Not to Write a Riak App](ch5/1.md)
+  * [Denormalization](ch5/2.md)
+  * [Data Modeling](ch5/3.md)
+  * [Conflict Resolution](ch5/4.md)
+  * [Request Tuning](ch5/5.md)
 * [Notes](en/06-notes.md)
 
